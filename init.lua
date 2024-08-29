@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -161,6 +161,36 @@ vim.opt.scrolloff = 10
 vim.opt.hlsearch = true
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
+--https://www.jackfranklin.co.uk/blog/code-folding-in-vim-neovim/
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.opt.foldcolumn = '1'
+--vim.opt.foldtext = ''
+vim.opt.foldlevel = 99
+--vim.opt.foldlevelstart = 1
+vim.opt.foldnestmax = 4
+
+--[[
+imap jk <Esc>
+
+inoremap ( ()<Esc>i
+inoremap { {}<Esc>i
+inoremap {<CR> {<CR>}<Esc>O
+inoremap [ []<Esc>i
+inoremap ' ''<Esc>i
+inoremap " ""<Esc>i
+--]]
+
+vim.keymap.set('i', 'jk', '<Esc>', { desc = 'Mapping for esc key. Lets save some time' })
+
+--Autocompelete pairs
+vim.keymap.set('i', '(', '()<Esc>i', {})
+vim.keymap.set('i', '{', '{}<Esc>i', {})
+vim.keymap.set('i', '{<CR>', '{<CR>}<Esc>i', {})
+vim.keymap.set('i', '[', '[]<Esc>i', {})
+vim.keymap.set('i', "'", "''<Esc>i", {})
+vim.keymap.set('i', '"', '""<Esc>i', {})
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous [D]iagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next [D]iagnostic message' })
@@ -203,6 +233,24 @@ vim.api.nvim_create_autocmd('TextYankPost', {
     vim.highlight.on_yank()
   end,
 })
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+  pattern = '*',
+  desc = 'Avoid overwritten by loading color scheme later',
+  callback = function()
+    vim.api.nvim_set_hl(0, 'Normal', { ctermbg = 'none' })
+    vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal' })
+    vim.api.nvim_set_hl(0, 'FloatBorder', { bg = 'none' })
+    --https://vimdoc.sourceforge.net/htmldoc/fold.html
+    --vim.api.nvim_set_hl(0, 'foldcolumn', { bg = 'darkgrey', fg = 'white' })
+    --vim.api.nvim_set_hl(0, 'folded', { bg = 'none', fg = 'blue' })
+    --https://github.com/folke/tokyonight.nvim/issues/34
+    vim.api.nvim_set_hl(0, 'WinSeparator', { fg = 'cyan' })
+  end,
+})
+
+vim.cmd.colorscheme 'habamax'
+--vim.cmd.hi 'normal ctermbg=none'
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
@@ -273,6 +321,7 @@ require('lazy').setup({
   -- after the plugin has been loaded:
   --  config = function() ... end
 
+  --[[
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
     event = 'VimEnter', -- Sets the loading event to 'VimEnter'
@@ -280,7 +329,7 @@ require('lazy').setup({
       require('which-key').setup()
 
       -- Document existing key chains
-      require('which-key').register {
+      require('which-key').add {
         ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
         ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
         ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
@@ -290,11 +339,12 @@ require('lazy').setup({
         ['<leader>h'] = { name = 'Git [H]unk', _ = 'which_key_ignore' },
       }
       -- visual mode
-      require('which-key').register({
-        ['<leader>h'] = { 'Git [H]unk' },
-      }, { mode = 'v' })
+      require('which-key').add {
+        { '<leader>h', desc = 'Git [H]unk', mode = 'v' },
+      }
     end,
   },
+  --]]
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -423,6 +473,7 @@ require('lazy').setup({
       -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
       -- used for completion, annotations and signatures of Neovim apis
       { 'folke/neodev.nvim', opts = {} },
+      { 'mfussenegger/nvim-jdtls' },
     },
     config = function()
       -- Brief aside: **What is LSP?**
@@ -528,6 +579,20 @@ require('lazy').setup({
             })
           end
 
+          -- Reference: https://vi.stackexchange.com/questions/39074/user-borders-around-lsp-floating-windows
+          -- Float windows borders for below handlers
+          local _border = 'single'
+
+          vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, { border = _border })
+
+          vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = _border })
+
+          vim.diagnostic.config { float = { border = _border } }
+
+          -- LspInfo's window border
+          -- Reference: https://vi.stackexchange.com/questions/39074/user-borders-around-lsp-floating-windows
+          require('lspconfig.ui.windows').default_options = { border = _border }
+
           -- The following autocommand is used to enable inlay hints in your
           -- code, if the language server you are using supports them
           --
@@ -565,10 +630,11 @@ require('lazy').setup({
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
-        -- clangd = {},
-        -- gopls = {},
-        -- pyright = {},
-        -- rust_analyzer = {},
+        clangd = {},
+        gopls = {},
+        --jdtls = {},
+        --pyright = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -704,6 +770,8 @@ require('lazy').setup({
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
 
+      vim.api.nvim_set_hl(0, 'CmpNormal', { bg = 'none' })
+
       cmp.setup {
         snippet = {
           expand = function(args)
@@ -769,10 +837,24 @@ require('lazy').setup({
           { name = 'luasnip' },
           { name = 'path' },
         },
+        --[[
+        --Autocompelete and suggestion window background color and border properties
+        --https://github.com/hrsh7th/nvim-cmp/discussions/1200
+        --]]
+        window = {
+          completion = {
+            border = 'rounded',
+            winhighlight = 'Normal:CmpNormal',
+          },
+          documentation = {
+            border = 'rounded',
+            winhighlight = 'Normal:CmpNormal',
+          },
+        },
       }
     end,
   },
-
+  --[[
   { -- You can easily change to a different colorscheme.
     -- Change the name of the colorscheme plugin below, and then
     -- change the command in the config to whatever the name of that colorscheme is.
@@ -784,13 +866,17 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      --vim.cmd.colorscheme 'habamax'
       vim.cmd.colorscheme 'tokyonight-night'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
+      -- vim.cmd.hi 'normal guibg=none'
     end,
   },
-
+  --]]
+  { 'catppuccin/nvim', name = 'catppuccin', priority = 1000 },
+  --
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -818,6 +904,9 @@ require('lazy').setup({
       local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
       statusline.setup { use_icons = vim.g.have_nerd_font }
+
+      -- local tabline = require 'mini.tabline'
+      -- tabline.setup()
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
@@ -863,7 +952,115 @@ require('lazy').setup({
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
+  {
+    'mfussenegger/nvim-dap',
+    config = function()
+      local dap = require 'dap'
 
+      --[[
+      --Debugging
+      --https://github.com/mfussenegger/nvim-dap/blob/6ae8a14828b0f3bff1721a35a1dfd604b6a933bb/doc/dap.txt#L523
+      --]]
+      --
+      vim.keymap.set('n', '<F5>', dap.continue)
+      vim.keymap.set('n', '<F10>', dap.step_over)
+      vim.keymap.set('n', '<F11>', dap.step_into)
+      vim.keymap.set('n', '<F12>', dap.step_out)
+      vim.keymap.set('n', '<Leader>b', dap.toggle_breakpoint)
+      vim.keymap.set('n', '<Leader>B', dap.set_breakpoint)
+      vim.keymap.set('n', '<Leader>lp', function()
+        dap.set_breakpoint(nil, nil, vim.fn.input 'Log point message: ')
+      end)
+      vim.keymap.set('n', '<Leader>dr', dap.repl.open)
+      vim.keymap.set('n', '<Leader>dl', dap.run_last)
+
+      -- Adapters Definition
+      dap.adapters.gdb = {
+        type = 'executable',
+        command = 'gdb',
+        args = { '-i', 'dap' },
+      }
+
+      dap.configurations.c = {
+        {
+          name = 'CLaunch',
+          type = 'gdb',
+          request = 'launch',
+          program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+          end,
+          cwd = '${workspaceFolder}',
+          stopAtBeginningOfMainSubprogram = false,
+        },
+      }
+
+      dap.configurations.cpp = {
+        {
+          name = 'CPPLaunch',
+          type = 'gdb',
+          request = 'launch',
+          program = function()
+            return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+          end,
+          cwd = '${workspaceFolder}',
+          stopAtBeginningOfMainSubprogram = false,
+        },
+      }
+    end,
+  },
+  {
+    'leoluz/nvim-dap-go',
+    config = function()
+      require('dap-go').setup()
+    end,
+  },
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = {
+      'mfussenegger/nvim-dap',
+      'nvim-neotest/nvim-nio',
+    },
+    config = function()
+      require('dapui').setup()
+      local dap, dapui = require 'dap', require 'dapui'
+      dap.listeners.before.attach.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.launch.dapui_config = function()
+        dapui.open()
+      end
+      dap.listeners.before.event_terminated.dapui_config = function()
+        dapui.close()
+      end
+      dap.listeners.before.event_exited.dapui_config = function()
+        dapui.close()
+      end
+
+      local widget = require 'dap.ui.widgets'
+      vim.keymap.set({ 'n', 'v' }, '<Leader>dh', widget.hover)
+      vim.keymap.set({ 'n', 'v' }, '<Leader>dp', widget.preview)
+      vim.keymap.set('n', '<Leader>df', function()
+        widget.centered_float(widget.frames)
+      end)
+      vim.keymap.set('n', '<Leader>ds', function()
+        widget.centered_float(widget.scopes)
+      end)
+    end,
+  },
+  {
+    'theHamsta/nvim-dap-virtual-text',
+    config = function()
+      require('nvim-dap-virtual-text').setup {}
+    end,
+  },
+  --[[
+  {
+    'nvim-telescope/telescope-dap.nvim',
+    config = function()
+      require('telescope').load_extension 'dap'
+    end,
+  },
+  --]]
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
   -- place them in the correct locations.
@@ -885,7 +1082,7 @@ require('lazy').setup({
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
