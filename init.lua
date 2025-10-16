@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = true
+vim.g.have_nerd_font = false
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -460,6 +460,7 @@ require('lazy').setup({
 
   { -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
+    version = '2.0.0',
     dependencies = {
       -- Automatically install LSPs and related tools to stdpath for Neovim
       -- NOTE: `opts = {}` is the same as calling `require('mason').setup({})`
@@ -953,6 +954,7 @@ require('lazy').setup({
       vim.keymap.set('n', '<Leader>dr', dap.repl.open)
       vim.keymap.set('n', '<Leader>dl', dap.run_last)
 
+      --[[
       -- Adapters Definition
       dap.adapters.gdb = {
         type = 'executable',
@@ -985,6 +987,8 @@ require('lazy').setup({
           stopAtBeginningOfMainSubprogram = false,
         },
       }
+      ]]
+      --
     end,
   },
   {
