@@ -252,6 +252,17 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 vim.cmd.colorscheme 'habamax'
 --vim.cmd.hi 'normal ctermbg=none'
 
+vim.api.nvim_create_user_command('Tty', function()
+  vim.cmd 'tabnew'
+  vim.cmd 'terminal'
+  vim.cmd 'startinsert'
+end, {})
+
+vim.keymap.set('n', '<leader>tt', '<cmd>Tty<CR>', { desc = 'New tab terminal' })
+
+vim.api.nvim_create_user_command('W', 'w', {})
+vim.api.nvim_create_user_command('Q', 'q', {})
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
