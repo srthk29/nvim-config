@@ -170,6 +170,12 @@ vim.opt.foldlevel = 99
 --vim.opt.foldlevelstart = 1
 vim.opt.foldnestmax = 4
 
+-- https://github.com/neovim/neovim/issues/33073
+vim.diagnostic.config {
+  -- virtual_lines = true,
+  virtual_text = true,
+}
+
 --[[
 imap jk <Esc>
 
@@ -488,7 +494,18 @@ require('lazy').setup({
 
       -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      -- https://github.com/catppuccin/nvim/discussions/770
+      {
+        'j-hui/fidget.nvim',
+        opts = {
+          notification = {
+            window = {
+              winblend = 0, -- Background color opacity in the notification window
+              border = 'rounded', -- Border around the notification window
+            },
+          },
+        },
+      },
 
       -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
       -- used for completion, annotations and signatures of Neovim apis
@@ -690,7 +707,12 @@ require('lazy').setup({
       --    :Mason
       --
       --  You can press `g?` for help in this menu.
-      -- require('mason').setup {}
+      require('mason').setup {
+        ensure_installed = {
+          -- 'jdtls', -- Optional: for full LSP features
+          'google-java-format',
+        },
+      }
 
       -- You can add other tools here that you want Mason to install
       -- for you, so that they are available from within Neovim.
@@ -731,13 +753,14 @@ require('lazy').setup({
       },
     },
     opts = {
-      notify_on_error = false,
+      notify_on_error = true,
       format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
         local disable_filetypes = { c = true, cpp = true }
         return {
+          async = false,
           timeout_ms = 500,
           lsp_fallback = not disable_filetypes[vim.bo[bufnr].filetype],
         }
@@ -745,11 +768,21 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        -- python = { "isort", "black" },
+        -- python = { 'isort', 'black' },
         --
         -- You can use a sub-list to tell conform to run *until* a formatter
         -- is found.
         -- javascript = { { "prettierd", "prettier" } },
+        -- go = { 'goimports', 'gofmt' },
+        java = { 'google_java_format' },
+      },
+      -- https://github.com/stevearc/conform.nvim/blob/c2526f1cde528a66e086ab1668e996d162c75f4f/README.md?plain=1#L502
+      formatters = {
+        google_java_format = {
+          inherit = 'google-java-format',
+          -- *   `aosp-java-format`: using 4 spaces indent
+          append_args = { '--aosp' },
+        },
       },
     },
   },
