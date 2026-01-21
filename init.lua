@@ -711,6 +711,7 @@ require('lazy').setup({
         ensure_installed = {
           -- 'jdtls', -- Optional: for full LSP features
           'google-java-format',
+          'clang-format',
         },
       }
 
@@ -775,6 +776,8 @@ require('lazy').setup({
         -- javascript = { { "prettierd", "prettier" } },
         -- go = { 'goimports', 'gofmt' },
         java = { 'google_java_format' },
+        -- https://clang.llvm.org/docs/ClangFormat.html
+        cpp = { 'clang_format' },
       },
       -- https://github.com/stevearc/conform.nvim/blob/c2526f1cde528a66e086ab1668e996d162c75f4f/README.md?plain=1#L502
       formatters = {
@@ -782,6 +785,11 @@ require('lazy').setup({
           inherit = 'google-java-format',
           -- *   `aosp-java-format`: using 4 spaces indent
           append_args = { '--aosp' },
+        },
+        clang_format = {
+          inherit = 'clang-format',
+          -- https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+          append_args = { '-style={BasedOnStyle: llvm, IndentWidth: 4}' },
         },
       },
     },
