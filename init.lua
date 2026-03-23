@@ -674,7 +674,6 @@ require('lazy').setup({
         clangd = {},
         gopls = {},
         --jdtls = {},
-        --pyright = {},
         rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -704,6 +703,38 @@ require('lazy').setup({
           cmd = { 'buf', 'lsp', 'serve' },
           filetypes = { 'proto' },
           root_markers = { 'buf.yaml', '.git' },
+        },
+        -- https://docs.astral.sh/ruff/editors/setup/#neovim
+        ruff = {
+          init_options = {
+            settings = {
+              -- Ruff language server settings go here
+              logLevel = 'debug',
+            },
+          },
+        },
+        --https://github.com/astral-sh/ruff-lsp/issues/23#issuecomment-2571330722
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                typeCheckingMode = 'off',
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = 'off',
+                autoImportCompletions = false,
+                -- https://stackoverflow.com/questions/78668958/mypy-pyright-do-not-warn-about-undefined-class-attribute
+                reportUninitializedInstanceVariable = 'warning',
+              },
+              linting = {
+                enabled = false,
+              },
+            },
+          },
+          -- Disable all diagnostics from Pyright
+          handlers = {
+            ['textDocument/publishDiagnostics'] = function() end,
+          },
         },
       }
 
@@ -785,6 +816,15 @@ require('lazy').setup({
         -- https://clang.llvm.org/docs/ClangFormat.html
         cpp = { 'clang_format' },
         proto = { 'clang_format' },
+        -- https://docs.astral.sh/ruff/editors/setup/#neovim
+        python = {
+          -- To fix auto-fixable lint errors.
+          'ruff_fix',
+          -- To run the Ruff formatter.
+          'ruff_format',
+          -- To organize the imports.
+          'ruff_organize_imports',
+        },
       },
       -- https://github.com/stevearc/conform.nvim/blob/c2526f1cde528a66e086ab1668e996d162c75f4f/README.md?plain=1#L502
       formatters = {
