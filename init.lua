@@ -673,7 +673,19 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         gopls = {},
-        --jdtls = {},
+        jdtls = {
+          cmd = { 'jdtls' },
+
+          root_dir = vim.fs.dirname(vim.fs.find({ 'gradlew', '.git', 'mvnw' }, { upward = true })[1]),
+
+          settings = {
+            java = {
+              contentProvider = {
+                preferred = 'fernflower',
+              },
+            },
+          },
+        },
         rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
