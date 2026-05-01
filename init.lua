@@ -527,6 +527,9 @@ require('lazy').setup({
               border = 'rounded', -- Border around the notification window
             },
           },
+          progress = {
+            ignore = { 'jdtls' },
+          },
         },
       },
 
