@@ -867,7 +867,9 @@ require('lazy').setup({
         clang_format = {
           inherit = 'clang-format',
           -- https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-          append_args = { '-style={BasedOnStyle: llvm, IndentWidth: 4}' },
+          append_args = {
+            '-style={BasedOnStyle: llvm, IndentWidth: 4, AllowShortFunctionsOnASingleLine: All, AllowShortBlocksOnASingleLine: Always, AllowShortLoopsOnASingleLine: true, AllowShortIfStatementsOnASingleLine: AllIfsAndElse, AllowShortLambdasOnASingleLine: All}',
+          },
         },
       },
     },
