@@ -856,6 +856,7 @@ require('lazy').setup({
           -- To organize the imports.
           'ruff_organize_imports',
         },
+        html = { 'htmlbeautifier' },
       },
       -- https://github.com/stevearc/conform.nvim/blob/c2526f1cde528a66e086ab1668e996d162c75f4f/README.md?plain=1#L502
       formatters = {
