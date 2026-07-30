@@ -856,7 +856,7 @@ require('lazy').setup({
           -- To organize the imports.
           'ruff_organize_imports',
         },
-        html = { 'htmlbeautifier' },
+        html = { 'prettier', 'superhtml', 'htmlbeautifier', stop_after_first = true },
       },
       -- https://github.com/stevearc/conform.nvim/blob/c2526f1cde528a66e086ab1668e996d162c75f4f/README.md?plain=1#L502
       formatters = {
@@ -870,6 +870,22 @@ require('lazy').setup({
           -- https://clang.llvm.org/docs/ClangFormatStyleOptions.html
           append_args = {
             '-style={BasedOnStyle: llvm, IndentWidth: 4, AllowShortFunctionsOnASingleLine: All, AllowShortBlocksOnASingleLine: Always, AllowShortLoopsOnASingleLine: true, AllowShortIfStatementsOnASingleLine: AllIfsAndElse, AllowShortLambdasOnASingleLine: All, BinPackArguments: true, AllowAllArgumentsOnNextLine: true, AllowAllParametersOfDeclarationOnNextLine: true, PointerAlignment: Left, ReferenceAlignment: Pointer}',
+          },
+        },
+        prettier = {
+          inherit = 'prettier',
+          append_args = {
+            '--tab-width',
+            '4',
+            '--plugin',
+            -- 'prettier-plugin-go-template',
+            vim.fn.expand '~/.local/share/nvim/mason/packages/prettier/node_modules/prettier-plugin-go-template/lib/index.js',
+            '--parser',
+            'go-template',
+            '--plugin',
+            vim.fn.expand '~/.local/share/nvim/mason/packages/prettier/node_modules/prettier-plugin-tailwindcss/dist/index.mjs',
+            --'--goTemplateBracketSpacing',
+            --'true',
           },
         },
       },
